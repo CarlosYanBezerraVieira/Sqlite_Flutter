@@ -1,16 +1,14 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/sqlite_api.dart';
 
 class DatabaseSqlite {
-  // Future<Database> openConnection() async {
-  Future<void> openConnection() async {
+  Future<Database> openConnection() async {
     final databasePath = await getDatabasesPath();
     final databaseFinalPath = join(databasePath, "SQLITE_EXAMPLE");
     print(databaseFinalPath);
-    await openDatabase(
+    return await openDatabase(
       databaseFinalPath,
-      version: 2,
+      version: 6,
       onConfigure: (db) async {
         print("onConfigure sendo chamado");
         await db.execute('PRAGMA foreign_keys =  ON');
@@ -21,12 +19,12 @@ class DatabaseSqlite {
         print("onCreate chamado");
         print(databaseFinalPath);
         final batch = db.batch();
-        batch.execute('''
-        create table teste(
-          id Integer primary key autoincrement,
-          nome varchar(200) 
-          ) 
-        ''');
+        // batch.execute('''
+        // create table teste(
+        //   id Integer primary key autoincrement,
+        //   nome varchar(200)
+        //   )
+        // ''');
 
         batch.execute('''
         create table produto(
@@ -35,56 +33,49 @@ class DatabaseSqlite {
           ) 
         ''');
 
-        // batch.execute('''
-        // create table categoria(
-        //   id Integer primary key autoincrement,
-        //   nome varchar(200)
-        //   )
-        // ''');
+        batch.execute('''
+        create table Task(
+          id Integer primary key autoincrement,
+          title text,
+          datatime num,
+          time varchar(100),
+          description text,
+          value integer
+          ) 
+        ''');
+
         batch.commit();
       },
 //sempre será chamado sempre que ouver uma alteração no version para mais incremntal (1 -> 2)
       onUpgrade: (Database db, int oldVersion, int version) {
         print("onUpgrade chamado");
         final batch = db.batch();
-        if (oldVersion == 1) {
+
+        if (oldVersion == 5) {
           batch.execute('''
-        create table produto(
+        create table Task(
           id Integer primary key autoincrement,
-          nome varchar(200) 
-          ) 
+          title text,
+          datatime num,
+          time varchar(100),
+          description text,
+          value num
+          )
         ''');
-          //   batch.execute('''
-          // create table categoria(
-          //   id Integer primary key autoincrement,
-          //   nome varchar(200)
-          //   )
-          // ''');
           batch.commit();
         }
-        // if (oldVersion == 2) {
-        //   batch.execute('''
-        // create table categoria(
-        //   id Integer primary key autoincrement,
-        //   nome varchar(200)
-        //   )
-        // ''');
-        //   batch.commit();
-        // }
       },
 
       // será chamado quando ouver uma alteração no version para menos decremental(2 -> 1)
       onDowngrade: (Database db, int oldVersion, int version) {
         print("onDowngrade chamado");
-        if (oldVersion == 3) {
+        if (oldVersion == 5) {
           final batch = db.batch();
           batch.execute('''
-        drop table categoria
+        drop table Task
         ''');
         }
       },
     );
-
-    // openDatabase(path)
   }
 }
